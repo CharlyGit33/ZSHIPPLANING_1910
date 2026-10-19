@@ -1,0 +1,288 @@
+<mvc:View
+    controllerName="ar.com.relesa.shipment.planning.controller.PalletDetail"
+    xmlns="sap.m"
+    xmlns:semantic="sap.f.semantic"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid"
+    xmlns:controls="ar.com.relesa.shipment.planning.controls"
+>
+    <f:DynamicPage
+        id="dynamicPage"
+        fitContent="true"
+        showFooter="true"
+        busy="{palletView>/palletBusy}"
+        busyIndicatorDelay="0"
+    >
+        <!-- DynamicPage Title -->
+        <f:title>
+            <f:DynamicPageTitle>
+                <f:breadcrumbs>
+                    <Breadcrumbs
+                        currentLocationText="{ShipmentService>/#pallet/palletId/@sap:label}: {ShipmentService>palletId}"
+                    >
+                        <Link
+                            text="{ShipmentService>/#planningShipment/shipmentId/@sap:label}: {ShipmentService>shipmentId}"
+                            press=".onNavToShipment"
+                        />
+                    </Breadcrumbs>
+                </f:breadcrumbs>
+                <f:navigationActions>
+                    <Button
+                        icon="sap-icon://full-screen"
+                        type="Transparent"
+                        visible="{= !${device>/system/phone} &amp;&amp; !${appView>/actionButtonsInfo/midColumn/fullScreen}}"
+                        press=".toggleFullScreen"
+                    />
+                    <Button
+                        icon="sap-icon://exit-full-screen"
+                        type="Transparent"
+                        visible="{= !${device>/system/phone} &amp;&amp; ${appView>/actionButtonsInfo/midColumn/fullScreen}}"
+                        press=".toggleFullScreen"
+                    />
+                    <Button
+                        icon="sap-icon://decline"
+                        type="Transparent"
+                        press=".onCloseDetailPress"
+                    />
+                </f:navigationActions>
+            </f:DynamicPageTitle>
+        </f:title>
+        <!-- DynamicPage Header -->
+        <f:header>
+            <f:DynamicPageHeader pinnable="true">
+                <HBox justifyContent="SpaceBetween">
+                    <VBox>
+                        <ObjectAttribute
+                            title="{ShipmentService>/#pallet/palletType/@sap:label}"
+                            text="{ShipmentService>palletTypeDescription}"
+                        />
+                        <ObjectAttribute
+                            title="{ShipmentService>/#pallet/materialId/@sap:label}"
+                            text="{ShipmentService>materialDescription}"
+                            visible="{= !!${ShipmentService>materialId}}"
+                        />
+                        <ObjectAttribute
+                            title="{i18n>shipmentDetail.document.label}"
+                            text="{ShipmentService>materialDocumentNumber} / {ShipmentService>materialDocumentFiscalYear}"
+                            visible="{= !!${ShipmentService>materialDocumentNumber}}"
+                        />
+                        <Button text="Materiales Auxiliares" 
+                        icon="sap-icon://add-product" type="Emphasized" press="onMaterialesAuxiliaresButtonPress" 
+                        class="sapUiResponsiveContentPadding sapUiSmallMarginTop"/>
+                    </VBox>
+                    <VBox>
+                        <ObjectStatus
+                            text="{ShipmentService>palletStatusDescription}"
+                            state="{parts: ['palletView>/yardStatus', 'ShipmentService>palletStatus', 'ShipmentService>palletType', 'ShipmentService>labelNumber'], formatter: '.formatter.getPalletStatusState'}"
+                            inverted="true"
+                        />
+                    </VBox>
+                </HBox>
+            </f:DynamicPageHeader>
+        </f:header>
+        <f:content>
+            <controls:CustomGridList
+                id="list.components"
+                items="{
+								path: 'ShipmentService>components',
+								sorter: [{ path: 'materialFamily', descending: false, group: '.mGroupFunctions.materialFamily'},
+										{ path: 'materialId', descending: false}],
+								groupHeaderFactory: '.getGroupHeader'
+						}"
+                mode="None"
+                busyIndicatorDelay="10000"
+                noDataText="{i18n>palletDetail.components.noData}"
+                afterModeChange=".onAfterModeChange"
+                busy="{palletView>/componentBusy}"
+            >
+                <controls:headerToolbar>
+                    <Toolbar>
+                        <content>
+                            <Title
+                                text="{i18n>palletDetail.components.title}"
+                            />
+                            <ToolbarSpacer />
+                            <Button
+                                tooltip="{i18n>palletDetail.group.tooltip}"
+                                icon="sap-icon://group-2"
+                                press=".onGroupOpenPress"
+                                ariaHasPopup="Dialog"
+                            />
+                        </content>
+                    </Toolbar>
+                </controls:headerToolbar>
+                <controls:customLayout>
+                    <!-- <grid:GridBasicLayout gridTemplateColumns="repeat(auto-fit, minmax(16rem, 1fr))" gridGap="0.5rem" /> -->
+                    <grid:GridBasicLayout
+                        gridTemplateColumns="repeat(auto-fit)"
+                        gridGap="0.5rem"
+                    />
+                </controls:customLayout>
+                <controls:items>
+                    <f:GridListItem
+                        type="Active"
+                        id="gridListItemsPalletDetail"
+                        busyIndicatorDelay="0"
+                        highlight="{parts: ['palletView>/yardStatus', 'ShipmentService>statusId'], formatter: '.formatter.getComponentStatusState'}"
+                    >
+                        <VBox height="100%">
+                            <OverflowToolbar design="Transparent">
+                                <ToolbarSpacer />
+                                <ObjectAttribute
+                                    text="{ShipmentService>floor}"
+                                />
+                                <ObjectStatus
+                                    text="{ShipmentService>statusDescription}"
+                                    state="{parts: ['palletView>/yardStatus', 'ShipmentService>statusId'], formatter: '.formatter.getComponentStatusState'}"
+                                    inverted="true"
+                                />
+                            </OverflowToolbar>
+                            <FlexBox
+                                class="sapUiSmallMargin"
+                                height="100%"
+                                alignItems="Start"
+                            >
+                                <ToggleButton
+                                    class="sapUiTinyMarginBottom"
+                                    type="Accept"
+                                    icon="{parts: ['palletView>/yardStatus', 'palletView>/palletStatus'], formatter: '.formatter.getIconStatusCondition'}"
+                                    enabled="{parts: ['palletView>/palletStatus', 'ShipmentService>statusId'], formatter: '.formatter.isItemEnabled'}"
+                                    pressed="{parts: ['palletView>/yardStatus', 'ShipmentService>statusId'], formatter: '.formatter.getComponentSelected'}"
+                                    visible="{=( ${palletView>/yardStatus} === 'pending' || ${palletView>/yardStatus} === 'checked' || ${palletView>/yardStatus} === 'inCheck'   )  &amp;&amp; ${ShipmentService>palletType} === 'M'}"
+                                    press=".onSelectionChange"
+                                />
+                                <!-- <CheckBox 
+											selected="{parts: ['palletView>/yardStatus', 'ShipmentService>statusId'], formatter: '.formatter.getComponentSelected'}" 
+											select=".onSelectionChange" 
+											visible="{=( ${palletView>/yardStatus} === 'pending' || ${palletView>/yardStatus} === 'checked' || ${palletView>/yardStatus} === 'inCheck'   )  &amp;&amp; ${ShipmentService>palletType} === 'M'}" 
+											enabled="{path: 'palletView>/palletStatus', formatter: '.formatter.isItemEnabled'}" /> -->
+                                <ObjectAttribute
+                                    class="sapUiSmallMarginBegin sapUiTinyMarginTop"
+                                    title="{ShipmentService>materialId} - {ShipmentService>materialDescription}"
+                                >
+                                    <layoutData>
+                                        <FlexItemData growFactor="3" />
+                                    </layoutData>
+                                </ObjectAttribute>
+                                <Input
+                                    type="Number"
+                                    busyIndicatorDelay="0"
+                                    value="{ShipmentService>observedQuantity}"
+                                    showClearIcon="true"
+                                    id="inputCantidad"
+                                    description="/{ShipmentService>quantity}"
+                                    change=".onObserverQuantityChange"
+                                    enabled="{= ${ShipmentService>palletType} === 'M' &amp;&amp; (${ShipmentService>statusId} === 'pending' || ${ShipmentService>statusId} === 'missing')}"
+                                />
+                            </FlexBox>
+                        </VBox>
+                    </f:GridListItem>
+                </controls:items>
+            </controls:CustomGridList>
+        </f:content>
+        <!-- DynamicPage Footer -->
+        <f:footer>
+            <OverflowToolbar>
+                <ToolbarSpacer />
+                <!-- ===== ADAPTACION CRUD/DEEP ENTITY: handlers ORIGINALES (function import), comentados para probar el flujo CRUD nuevo. Descomentar este bloque y comentar el bloque "ADAPTACION CRUD/DEEP ENTITY: handlers NUEVOS" de abajo para volver atrás. ===== -->
+                <!--
+                <Button
+                    id="idBtnGuardar"
+                    text="Guardar"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://save"
+                    press=".onGuardar"
+                    visible="true"
+                />
+
+                <Button
+                    text="{i18n>palletDetail.open.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://unlocked"
+                    press=".onPalletUncheck"
+                    visible="{= ${palletView>/yardStatus} === 'pending' &amp;&amp; ${ShipmentService>palletStatus} !== 'pending' || ${palletView>yardStatus} !== 'inCheck'}"
+                />
+
+                <Button
+                    text="{i18n>palletDetail.upload.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://upload"
+                    press=".onPalletCheck"
+                    visible="{= ${palletView>/yardStatus} === 'checked' &amp;&amp; (${ShipmentService>palletStatus} === 'checked' || ${ShipmentService>palletStatus} === 'pending')}"
+                />
+                <Button
+                    text="{i18n>palletDetail.download.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://download"
+                    press=".onPalletUncheck"
+                    visible="{= ${palletView>/yardStatus} === 'checked' &amp;&amp; ${ShipmentService>palletStatus} !== 'checked' &amp;&amp; ${ShipmentService>palletStatus} !== 'pending'}"
+                />
+
+                <Button
+                    text="{i18n>palletDetail.checkOut.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://shipping-status"
+                    press=".onPalletCheck"
+                    visible="{= ${palletView>/yardStatus} === 'invoiced' &amp;&amp; ${ShipmentService>palletStatus} === 'invoiced'}"
+                />
+                <Button
+                    text="{i18n>palletDetail.undo.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://undo"
+                    press=".onPalletUncheck"
+                    visible="{= ${palletView>/yardStatus} === 'invoiced' &amp;&amp; ${ShipmentService>palletStatus} === 'checkedOut'}"
+                />
+                -->
+
+                <!-- ===== ADAPTACION CRUD/DEEP ENTITY: handlers NUEVOS, ahora despachados por el switch global "Modo de prueba" (Toolbar arriba de list.transport en ShipmentDetail.view.xml, modelo testMode>/useCRUD seteado en Component.js). Cada "...Switch" lee el flag y llama a la versión CRUD o a la legacy — ver PalletDetail.controller.js / BaseController.js. ===== -->
+                <Button
+                    id="idBtnGuardar"
+                    text="Guardar"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://save"
+                    press=".onGuardarSwitch"
+                    visible="true"
+                />
+
+                <Button
+                    text="{i18n>palletDetail.open.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://unlocked"
+                    press=".onPalletUncheckSwitch"
+                    visible="{= ${palletView>/yardStatus} === 'pending' &amp;&amp; ${ShipmentService>palletStatus} !== 'pending' || ${palletView>yardStatus} !== 'inCheck'}"
+                />
+
+                <Button
+                    text="{i18n>palletDetail.upload.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://upload"
+                    press=".onPalletCheckSwitch"
+                    visible="{= ${palletView>/yardStatus} === 'checked' &amp;&amp; (${ShipmentService>palletStatus} === 'checked' || ${ShipmentService>palletStatus} === 'pending')}"
+                />
+                <Button
+                    text="{i18n>palletDetail.download.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://download"
+                    press=".onPalletUncheckSwitch"
+                    visible="{= ${palletView>/yardStatus} === 'checked' &amp;&amp; ${ShipmentService>palletStatus} !== 'checked' &amp;&amp; ${ShipmentService>palletStatus} !== 'pending'}"
+                />
+
+                <Button
+                    text="{i18n>palletDetail.checkOut.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://shipping-status"
+                    press=".onPalletCheckSwitch"
+                    visible="{= ${palletView>/yardStatus} === 'invoiced' &amp;&amp; ${ShipmentService>palletStatus} === 'invoiced'}"
+                />
+                <Button
+                    text="{i18n>palletDetail.undo.button.text}"
+                    busyIndicatorDelay="0"
+                    icon="sap-icon://undo"
+                    press=".onPalletUncheckSwitch"
+                    visible="{= ${palletView>/yardStatus} === 'invoiced' &amp;&amp; ${ShipmentService>palletStatus} === 'checkedOut'}"
+                />
+            </OverflowToolbar>
+        </f:footer>
+    </f:DynamicPage>
+</mvc:View>

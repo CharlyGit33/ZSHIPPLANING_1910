@@ -1,0 +1,130 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+    <!-- <SelectDialog
+		noDataText="No hay Materiales"
+		title="Seleccione un Material Auxiliar"
+		search=".onMatAuxSearch"
+		confirm=".onMatAuxClose"
+		cancel=".onMatAuxClose"
+		items="{
+                path: 'material>/materials',
+                sorter: {
+                    path: 'materialDescription'
+                },
+                filters: [{
+                    path: 'auxiliaryMaterial',
+                    operator: 'EQ',
+                    value1: 'true'
+                }]
+            }">
+		<StandardListItem
+			title="{= Number(${material>materialId})}"
+			description="{material>materialDescription}"
+            icon="sap-icon://product"
+			type="Active" />
+	</SelectDialog> -->
+	<Dialog title="Seleccione un Material Auxiliar" >
+		<FacetFilter
+			id="idFacetFilter"
+			type="Simple"
+			showPersonalization="true"
+			showReset="true"
+			reset="handleFacetFilterReset"
+			showPopoverOKButton="true"
+			confirm="handleConfirm">
+				<FacetFilterList
+					id="Marca"
+					mode="SingleSelectMaster"
+					title="Marca"
+					key="Marca"
+					items="{path:'material>/MarcaSet'}" >
+						<FacetFilterItem
+							text="{material>MarcaDesc}"
+							key="{material>MarcaId}"
+						/>
+				</FacetFilterList>
+				<FacetFilterList
+					id="Sabor"
+					mode="SingleSelectMaster"
+					title="Sabor"
+					key="Sabor"
+					items="{path:'material>/SaborSet'}" >
+						<FacetFilterItem
+							text="{material>SaborDesc}"
+							key="{material>SaborId}"
+						/>
+				</FacetFilterList>
+				<FacetFilterList
+					id="Tamano"
+					mode="SingleSelectMaster"
+					title="Tamaño"
+					key="Tamano"
+					items="{path:'material>/TamanoSet'}" >
+						<FacetFilterItem
+							text="{material>TamanoDesc}"
+							key="{material>TamanoId}"
+						/>
+				</FacetFilterList>
+				<FacetFilterList
+					id="Venta"
+					mode="SingleSelectMaster"
+					title="Venta Por"
+					key="Venta"
+					items="{path:'material>/VentaPorSet'}" >
+						<FacetFilterItem
+							text="{material>VentaPorDesc}"
+							key="{material>VentaPorId}"
+						/>
+				</FacetFilterList>												
+		</FacetFilter>
+
+
+		<List  
+			id="matnrTable"
+			noDataText="No hay Materiales"
+			items="{
+					path: 'material>/materials',
+					sorter: {
+						path: 'materialDescription'
+					},
+					filters: [{
+						path: 'auxiliaryMaterial',
+						operator: 'EQ',
+						value1: 'true'
+					}]
+		}">
+		<headerToolbar>
+			<OverflowToolbar height="auto">
+				<VBox>
+					<SearchField
+						showRefreshButton="false"
+						tooltip="{i18n>masterSearchTooltip}"
+						search=".onMatAuxSearch"
+						value=""
+						width="auto">
+						<layoutData>
+							<OverflowToolbarLayoutData
+								minWidth="150px"
+								maxWidth="240px"
+								shrinkable="true"
+								priority="NeverOverflow"/>
+						</layoutData>
+					</SearchField>						
+				</VBox>
+				<ToolbarSpacer/>
+			</OverflowToolbar>
+		</headerToolbar>
+		<StandardListItem
+			press=".onMatAuxClose"
+			title="{= Number(${material>materialId})}"
+			description="{material>materialDescription}"
+            icon="sap-icon://product"
+			type="Active" />		
+		
+		</List>
+		<beginButton>
+			<Button text="Cancelar" press=".onMatAuxClose" />
+		</beginButton>
+	</Dialog>
+</core:FragmentDefinition>

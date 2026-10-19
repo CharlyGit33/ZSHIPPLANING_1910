@@ -1,0 +1,241 @@
+{
+	"_version": "1.32.0",
+	"sap.app": {
+		"id": "ar.com.relesa.shipment.planning",
+		"type": "application",
+		"i18n": {
+			"bundleUrl": "i18n/i18n.properties",
+			"supportedLocales": [
+				"",
+				"en",
+				"es"
+			]
+		},
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"applicationVersion": {
+			"version": "1.0.0"
+		},
+		"resources": "resources.json",
+		"dataSources": {
+			"mainService": {
+				"uri": "/sap/opu/odata/sap/ZPLANNING_SHIPMENT_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/metadata.xml"
+				}
+			},
+			"locationService": {
+				"uri": "/sap/opu/odata/sap/ZSALES_ORGANIZATION_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/locationService/metadata.xml"
+				}
+			},
+			"shipmentStatusService": {
+				"uri": "/sap/opu/odata/sap/ZSHIPMENT_STATUS_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/shipmentStatusService/metadata.xml"
+				}
+			},
+			"vendorService": {
+				"uri": "/sap/opu/odata/sap/ZCA_VENDOR_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/vendorService/metadata.xml"
+				}
+			},
+			"userService": {
+				"uri": "/sap/opu/odata/sap/ZUSER_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/metadata.xml"
+				}
+			},
+			"materialService": {
+				"uri": "/sap/opu/odata/sap/ZCA_MATERIAL_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/metadata.xml"
+				}
+			},
+			"zinload": {
+				"uri": "/sap/opu/odata/sap/ZINLOAD_DOCUMENT_SRV",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/metadata.xml"
+				}
+			}
+		},
+		"sourceTemplate": {
+			"id": "@sap/ux-app-migrator:freestyle",
+			"version": "1.19.3",
+			"toolsId": "e5e7783a-4c20-4bed-9769-00d11f075e84"
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"icons": {
+			"icon": "sap-icon://detail-view",
+			"favIcon": "",
+			"phone": "",
+			"phone@2": "",
+			"tablet": "",
+			"tablet@2": ""
+		},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"rootView": {
+			"viewName": "ar.com.relesa.shipment.planning.view.App",
+			"type": "XML",
+			"async": true,
+			"id": "app"
+		},
+		"dependencies": {
+			"minUI5Version": "1.89.0",
+			"libs": {
+				"sap.ui.core": {},
+				"sap.m": {},
+				"sap.f": {},
+				"sap.ndc": {}
+			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "ar.com.relesa.shipment.planning.i18n.i18n",
+					"supportedLocales": [
+						"",
+						"en",
+						"es"
+					]
+				}
+			},
+			"": {
+				"dataSource": "mainService",
+				"preload": true,
+				"settings": {
+					"defaultUpdateMethod": "PUT"
+				}
+			},
+			"location": {
+				"dataSource": "locationService",
+				"preload": true
+			},
+			"shipmentStatus": {
+				"dataSource": "shipmentStatusService",
+				"preload": true,
+				"settings": {
+					"defaultOperationMode": "Client",
+					"defaultBindingMode": "OneWay",
+					"defaultCountMode": "Request"
+				}
+			},
+			"vendor": {
+				"dataSource": "vendorService",
+				"preload": true
+			},
+			"material": {
+				"dataSource": "materialService",
+				"preload": true
+			},
+			"inload": {
+				"dataSource": "zinload",
+				"preload": true,
+				"settings": {
+					"defaultUpdateMethod": "PUT"
+				}
+			}
+		},
+		"resources": {
+			"css": [
+				{
+					"uri": "css/style.css"
+				}
+			]
+		},
+		"routing": {
+			"config": {
+				"routerClass": "sap.f.routing.Router",
+				"viewType": "XML",
+				"viewPath": "ar.com.relesa.shipment.planning.view",
+				"controlId": "layout",
+				"controlAggregation": "beginColumnPages",
+				"bypassed": {
+					"target": "notFound"
+				},
+				"async": true
+			},
+			"routes": [
+				{
+					"pattern": "",
+					"name": "master",
+					"target": "master"
+				},
+				{
+					"pattern": "shipmentDetail/{shipmentId}/{salesOrganizationId}/{shipmentDate}",
+					"name": "shipmentDetail",
+					"target": [
+						"master",
+						"shipmentDetail"
+					]
+				},
+				{
+					"pattern": "palletDetail/{shipmentId}/{salesOrganizationId}/{plantId}/{shipmentDate}/{shipmentType}/{palletId}",
+					"name": "palletDetail",
+					"target": [
+						"master",
+						"palletDetail"
+					]
+				}
+			],
+			"targets": {
+				"master": {
+					"viewName": "Master",
+					"viewLevel": 1,
+					"viewId": "master"
+				},
+				"shipmentDetail": {
+					"viewName": "ShipmentDetail",
+					"viewId": "shipmentDetail",
+					"viewLevel": 1,
+					"controlAggregation": "midColumnPages"
+				},
+				"palletDetail": {
+					"viewName": "PalletDetail",
+					"viewId": "palletDetail",
+					"viewLevel": 1,
+					"controlAggregation": "midColumnPages"
+				},
+				"detailObjectNotFound": {
+					"viewName": "DetailObjectNotFound",
+					"viewId": "detailObjectNotFound",
+					"controlAggregation": "midColumnPages"
+				},
+				"notFound": {
+					"viewName": "NotFound",
+					"viewId": "notFound"
+				}
+			}
+		},
+		"flexBundle": false
+	}
+}

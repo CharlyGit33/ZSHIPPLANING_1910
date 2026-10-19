@@ -1,0 +1,36 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+    xmlns:grid="sap.ui.layout.cssgrid"
+    xmlns:f="sap.f">
+    <Dialog title="Pallets con Faltantes">
+        <f:GridList
+            headerText=""
+            mode="SingleSelectMaster"
+            items="{palletsFaltantes>/}"
+            selectionChange="onPalletSelect"
+            class="sapUiResponsiveContentPadding">
+            <f:customLayout>
+                <grid:GridBasicLayout gridTemplateColumns="repeat(auto-fit, minmax(16rem, 1fr))" gridGap="0.5rem" />
+            </f:customLayout>
+            <f:GridListItem
+                press=".onPalletSelect"
+                highlight="Error">
+                <VBox height="100%">
+                    <HBox height="100%" class="sapUiSmallMargin" alignItems="Center">
+                        <core:Icon src="sap-icon://sap-box" width="3rem" class="sapUiSmallMarginEnd" />
+                        <VBox>
+                            <Title text="{palletsFaltantes>palletId}" wrapping="true" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </f:GridListItem>
+        </f:GridList>
+        <beginButton>
+            
+        </beginButton>
+        <endButton>
+            <Button text="{i18n>filter.button.cancel}" icon="sap-icon://sys-cancel" type="Reject" press=".onPalletCancel"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

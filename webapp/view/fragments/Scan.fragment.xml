@@ -1,0 +1,31 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form" xmlns:l="sap.ui.layout">
+    <Dialog title="{i18n>scan.title}" contentWidth="20%">
+        <content>
+            <f:Form editable="true">
+                <f:layout>
+                    <f:ResponsiveGridLayout labelSpanXL="4" labelSpanL="4" labelSpanM="4" labelSpanS="12" adjustLabelSpan="false" emptySpanXL="0" emptySpanL="0"
+						emptySpanM="0" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1" singleContainerFullSize="false"/>
+                </f:layout>
+                <f:formContainers>
+                    <f:FormContainer>
+                        <f:formElements>
+                            <f:FormElement label="Código">
+                                <f:fields>
+                                    <Input id="codigoDeBarras" >
+                                    </Input>
+                                </f:fields>
+                            </f:FormElement>
+                            
+                        </f:formElements>
+                    </f:FormContainer>
+                </f:formContainers>
+            </f:Form>
+        </content>
+        <beginButton>
+            <Button text="{i18n>filter.button.confirm}" icon="sap-icon://search" type="Emphasized" press=".onScanFillInput"/>
+        </beginButton>
+        <endButton>
+            <Button text="{i18n>filter.button.cancel}" icon="sap-icon://sys-cancel" type="Reject" press=".onScanCancel"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

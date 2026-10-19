@@ -1,0 +1,120 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:grid="sap.ui.layout.cssgrid"
+    xmlns:f="sap.f"
+>
+    <Dialog title="Materiales auxiliares">
+        <content>
+            <Table
+                mode="{= ${materialAuxModel>/editableMaterialAux} ? 'Delete' : 'None'}"
+                delete="onRowDelete"
+                updateFinished="onUpdate"
+                id="idMaterialAuxInPalletTable"
+                items="{shipmentAux>/headerProductAux/}"
+                width="100%"
+            >
+                <headerToolbar>
+                    <OverflowToolbar>
+                        <content>
+                            <ToolbarSpacer />
+                            <Button
+                                icon="sap-icon://add"
+                                press="onRowAdd"
+                                tooltip="{i18n>tooltip.button.add}"
+                                enabled="{= ${materialAuxModel>/editableMaterialAux} }"
+                            />
+                            <!-- <Button icon="sap-icon://less" press="onRowDelete" tooltip="{i18n>tooltip.button.delete}" enabled="{=  ${materialAuxModel>/enabled} }"/> -->
+                            <!-- <Button icon="sap-icon://save" text="Grabar" press="onTableUpload" tooltip="{i18n>tooltip.button.upload}" enabled="{= ${materialAuxModel>/enabled} }"/> -->
+                        </content>
+                    </OverflowToolbar>
+                </headerToolbar>
+                <columns>
+                    <!-- <Column
+                        width="25%"
+                        demandPopin="false"
+                        minScreenWidth="Phone"
+                    >
+                        <Text text="{i18n>shipmentDetail.column.code}" />
+                    </Column> -->
+                    <Column
+                        demandPopin="true"
+                        minScreenWidth="Phone"
+                    >
+                        <Text text="{i18n>shipmentDetail.column.Product}" />
+                    </Column>
+                    <Column
+                        demandPopin="true"
+                        minScreenWidth="Tablet"
+                        hAlign="End"
+                    >
+                        <Text text="{i18n>shipmentDetail.column.Quant}" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <VBox>
+                                <ObjectIdentifier
+                                    title="{shipmentAux>materialDescription}"
+                                />
+                                <ComboBox
+                                    value="{path:'shipmentAux>materialId', formatter:'.formatter.removeLeadingZero' }"
+                                    selectedKey="{shipmentAux>materialId}"
+                                    showSecondaryValues="true"
+                                    items="{path:'material>/materials/', templateShareable:'false'}"
+                                    editable="{= ${materialAuxModel>/editableMaterialAux} }"
+                                    enabled="{shipmentAux>unblocked}"
+                                >
+                                    <core:ListItem
+                                        key="{material>materialId}"
+                                        text="{path:'material>materialId', formatter:'.formatter.removeLeadingZero' }"
+                                        additionalText="{path:'material>materialId', formatter: '.formatter.toNumber' }"
+                                    />
+                                </ComboBox>
+                            </VBox>
+
+                            <HBox
+                                alignContent="Center"
+                                alignItems="Center"
+                                justifyContent="SpaceBetween"
+                                renderType="Bare"
+                            >
+                                <Input
+                                    submit="onSubmit"
+                                    value="{shipmentAux>quantity}"
+                                    type="Number"
+                                    fieldWidth="100%"
+                                    textAlign="End"
+                                    editable="{= ${materialAuxModel>/editableMaterialAux} }"
+                                />
+                                <Text
+                                    text="{shipmentAux>baseUnit}"
+                                    class="sapUiTinyMarginBegin"
+                                    width="100%"
+                                />
+                            </HBox>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+
+        <beginButton>
+            <Button
+                text="Confirmar"
+                icon="sap-icon://save"
+                type="Emphasized"
+                press=".onAuxMatPalletSave"
+            />
+        </beginButton>
+        <endButton>
+            <Button
+                text="{i18n>filter.button.cancel}"
+                icon="sap-icon://sys-cancel"
+                type="Reject"
+                press=".onAuxMatDialogClose"
+            />
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

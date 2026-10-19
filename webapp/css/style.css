@@ -1,0 +1,170 @@
+[data-height="ok"] .sapMITBText {
+    font-size: 1.3rem !important;
+}
+
+
+@media only screen and (max-width: 1281px) {
+
+    .sapFDynamicPage-Std-Phone .sapFDynamicPageContent,
+    .sapFDynamicPage-Std-Phone .sapFDynamicPageContentFitContainer {
+        padding: 0.2rem 0.2rem 0 0.2rem
+    }
+
+    .sapUiMedia-Std-Phone .sapMITBScrollContainer {
+        margin: 0 0rem;
+    }
+
+    .sapUiMedia-Std-Phone .sapMITH .sapMITBHead,
+    .sapUiMedia-Std-Phone .sapMITB .sapMITBHead {
+        display: inline-block;
+        margin: 0rem 0 0;
+        vertical-align: top;
+        padding: 0;
+    }
+
+    .sapFDynamicPage-Std-Phone .sapFDynamicPageTitleWrapper.sapFDynamicPageTitleSnapped>.sapFDynamicPageTitle {
+        padding: 0.5rem 0rem 0rem 0.5rem;
+    }
+
+    .sapMListUl>.sapMLIB.sapMGHLI {
+        background: #ffffff;
+        height: 1.5rem;
+        line-height: 2rem;
+        padding-top: 1rem;
+    }
+
+    /* Check Box */
+    .sapUiSizeCompact .sapMCbBg {
+        left: 0.1rem;
+        top: 0.1rem;
+        height: 1.5rem;
+        width: 1.5rem;
+        line-height: 1.5rem;
+        font-size: 1.5rem;
+        border-radius: 7px;
+    }
+
+    .sapMObjStatusInverted .sapMObjStatusText,
+    .sapMObjStatusInverted .sapMObjStatusIcon {
+        font-family: "72", "72full", Arial, Helvetica, sans-serif;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #ffffff;
+    }
+
+    .sapUiSmallMargin {
+        margin: 0.2rem 0.2rem 0.2rem 0.6rem !important;
+    }
+
+    .sapMList .sapMListBGTranslucent .sapMListTblCnt {
+        width: 100% !important;
+    }
+
+    .sapMListTblCell.sapMListTblCellNoData,
+    .sapMListTblCell:nth-last-child(2) {
+        padding-right: 0.2rem;
+    }
+
+    .sapMListTblHighlightCol+.sapMListTblHeaderCell,
+    .sapMListTblHighlightCell+.sapMListTblCell {
+        padding-left: 0.2rem;
+    }
+
+    .sapMListTblSubCnt {
+        padding: 0.5rem 0.2rem;
+        box-sizing: border-box;
+    }
+
+    .sapFDynamicPageContent .sapFDynamicPageAlignContent {
+        margin-left: 0rem;
+        margin-right: 0rem;
+    }
+
+    :not(.sapMListModeDelete)>.sapMLIB.sapMLIBTypeNavigation {
+        padding-right: 0rem;
+        padding-left: 0rem;
+    }
+
+    .sapMLIB.sapMObjLItem {
+        padding: 0.2rem;
+    }
+
+    .sapMLIBImgNav {
+        width: 2rem;
+        font-size: 0.75rem;
+        color: #878787;
+    }
+
+    .sapMObjStatus {
+        font-size: 1rem;
+        color: #5e696e;
+        display: inline-block;
+    }
+
+    .sapMObjLAttrRow {
+        font-size: .875rem;
+        padding-top: 0.1rem;
+    }
+
+    .sapMText.sapMObjLTitle {
+        vertical-align: top;
+        word-break: break-word;
+        color: #333333;
+        font-size: 1rem;
+        font-weight: normal;
+        line-height: 1.5rem;
+    }
+
+    .sapMObjectAttributeDiv .sapMText {
+        font-size: 17px !important;
+        font-weight: bold !important;
+        color: #000000;
+    }
+
+    .sapMInputDescriptionText {
+        font-size: 17px !important;
+        font-weight: bold !important;
+        color: #000000;
+    }
+
+    .sapMInput.sapMInputBaseHasEndIcons .sapMInputBaseInner,
+    .sapMInput.sapMInputBaseHasBeginIcons .sapMInputBaseInner {
+        FONT-SIZE: 17PX !important;
+    }
+
+}
+
+.sapMLIBActionable .sapMText {
+    font-size: 17px !important;
+    font-weight: bold !important;
+    color: #000000;
+}
+
+.sapMInputDescriptionText {
+    font-size: 17px !important;
+    font-weight: bold !important;
+    color: #000000;
+}
+
+.sapMInput.sapMInputBaseHasEndIcons .sapMInputBaseInner,
+.sapMInput.sapMInputBaseHasBeginIcons .sapMInputBaseInner {
+    FONT-SIZE: 17PX !important;
+}
+
+.custom-style-class {
+    background-color: #f0f0f0;
+    font-weight: bold;
+    padding: 10px;
+}
+
+.my-group-header-class {
+    color: blue;
+    border-bottom: 1px solid #ccc;
+}
+
+.sapMListUl>.sapMLIB.sapMGHLI {
+    height: 4rem;
+    padding-top: 0rem;
+    padding-bottom: 0rem;
+}
+

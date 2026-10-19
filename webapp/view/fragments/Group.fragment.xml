@@ -1,0 +1,11 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<ViewSettingsDialog
+		confirm=".onGroupConfirmPress">
+		<groupItems>
+			<ViewSettingsItem text="{ShipmentService>/#palletComponent/materialFamily/@sap:label}" key="materialFamily" selected="true" />
+			<ViewSettingsItem text="{ShipmentService>/#palletComponent/floor/@sap:label}" key="floor" />
+		</groupItems>
+	</ViewSettingsDialog>
+</core:FragmentDefinition>
