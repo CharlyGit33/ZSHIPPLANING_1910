@@ -136,16 +136,10 @@ sap.ui.define([
 			this.agregarPCK();
 			var oGridList = this.byId("list.components");
 			var oBinding = oGridList.getBinding("items");
-			//console.log(aGroups)
-			var aGroups = [];
-
-			aGroups.push(new Sorter("materialFamily", true, this.mGroupFunctions["materialFamily"]));
-
-			var path = oGridList.getBinding("items").oContext.sDeepPath;
-			var localpalletId = path[(path.length - 4)] + path[(path.length - 3)]
-			if (!(this.PALLETID == localpalletId)) {
-				oBinding.sort(aGroups);
-			}
+			oBinding.sort([
+				new Sorter("materialFamily", false, this.mGroupFunctions["materialFamily"]),
+				new Sorter("materialId", false)
+			]);
 
 			//console.log(this.SCROLLTOP)
 
@@ -539,7 +533,6 @@ sap.ui.define([
 			//this.onGuardarDesdeFaltante();
 			//Fin Mod Carlos Aparicio 20.11.2025
 			this.getView().setBusy(true)
-			var that = this;
 
 			const oInput = oEvent.getSource(),
 				oListItem = oInput.getParent().getParent().getParent(),
@@ -552,36 +545,33 @@ sap.ui.define([
 
 			if (!(Device.support.touch && valorDelInput == '')) {
 				oListItem.setBusy(true);
-				let oResponse = await ShipmentService.updateObservedQuantity(sPath, valorDelInput)
-					.then(function (oDataResponse) {
-						// --- LÓGICA DE ÉXITO ---
-						// 'oDataResponse' contiene el objeto de la entidad actualizada devuelto por el servicio OData.
-						this.onGuardar(null)
-						console.log("Actualización exitosa");
-						this.getView().setBusy(false)
-						// Ejemplo: Mostrar un mensaje de éxito al usuario
-						sap.m.MessageToast.show("Cantidad observada actualizada correctamente.");
-						// Ejemplo: Refrescar algún modelo o lista en la UI
-						// this.getView().getModel().refresh();
+				try {
+					await ShipmentService.updateObservedQuantity(sPath, valorDelInput);
+					const oUpdatedComponent = await ShipmentService.read(sPath);
+					const iSelectedIndex = this.SELECCIONADOS.findIndex(function (oSelected) {
+						return oSelected.palletId === oUpdatedComponent.palletId &&
+							oSelected.floor === oUpdatedComponent.floor &&
+							oSelected.materialId === oUpdatedComponent.materialId;
+					});
 
-					}.bind(this))
-					.catch(function (oError) {
-						// --- LÓGICA DE ERROR ---
-						// 'oError' contiene el objeto de error devuelto por la Promesa (que es el error de OData).
-						this.getView().setBusy(false)
-						console.error("Error en la actualización. Objeto de error:");
+					if (iSelectedIndex !== -1) {
+						if (oUpdatedComponent.statusId === "missing") {
+							this.SELECCIONADOS.splice(iSelectedIndex, 1);
+						} else {
+							this.SELECCIONADOS[iSelectedIndex] = oUpdatedComponent;
+						}
+						this.SeleccionadosAux = this.SELECCIONADOS;
+					}
 
-						// Ejemplo: Extraer y mostrar el mensaje de error del backend
-						const sErrorMessage = oError.message || "Ocurrió un error inesperado.";
-						sap.m.MessageBox.error('Fallo al actualizar');
-
-						// Ejemplo: Registrar el error completo en el log
-						// jQuery.sap.log.error("Error OData", oError, "MiComponente");
-					}.bind(this));
-
-				await this.byId("list.components").getBinding("items").refresh();
-
-				oListItem.setBusy(false);
+					sap.m.MessageToast.show("Cantidad observada actualizada correctamente.");
+				} catch (oError) {
+					console.error("Error al actualizar la cantidad observada:", oError);
+					sap.m.MessageBox.error("Fallo al actualizar");
+				} finally {
+					this.byId("list.components").getBinding("items").refresh();
+					this.getView().setBusy(false);
+					oListItem.setBusy(false);
+				}
 
 				//Esto se hace para que no aparezca el teclado de android
 				//var field = document.createElement('input');
