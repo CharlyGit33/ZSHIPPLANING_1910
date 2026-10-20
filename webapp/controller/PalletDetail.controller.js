@@ -1591,9 +1591,9 @@ sap.ui.define([
 		},
 
 		onPalletUncheckSwitch: function (oEvent) {
-			if (this._isCRUDModeOn()) {
-				return this.onPalletUncheckCRUD(oEvent);
-			}
+			// if (this._isCRUDModeOn()) {
+			// 	return this.onPalletUncheckCRUD(oEvent);
+			// }
 			return this.onPalletUncheck(oEvent);
 		}
 
