@@ -563,12 +563,12 @@ sap.ui.define([
 						this.SeleccionadosAux = this.SELECCIONADOS;
 					}
 
+					await this._refreshComponentsPreservingSelection();
 					sap.m.MessageToast.show("Cantidad observada actualizada correctamente.");
 				} catch (oError) {
 					console.error("Error al actualizar la cantidad observada:", oError);
 					sap.m.MessageBox.error("Fallo al actualizar");
 				} finally {
-					this.byId("list.components").getBinding("items").refresh();
 					this.getView().setBusy(false);
 					oListItem.setBusy(false);
 				}
@@ -581,6 +581,40 @@ sap.ui.define([
 			}
 
 
+		},
+
+		_refreshComponentsPreservingSelection: function () {
+			const oList = this.byId("list.components");
+
+			return new Promise(function (resolve) {
+				oList.attachEventOnce("updateFinished", function () {
+					const aSelected = this.SELECCIONADOS || [];
+
+					oList.getItems().forEach(function (oItem) {
+						const oContext = oItem.getBindingContext("ShipmentService");
+						const oComponent = oContext && oContext.getObject();
+						if (!oComponent || !aSelected.some(function (oSelected) {
+							return oSelected.palletId === oComponent.palletId &&
+								oSelected.floor === oComponent.floor &&
+								oSelected.materialId === oComponent.materialId;
+						})) {
+							return;
+						}
+
+						const oContent = oItem.getContent()[0];
+						const oFlexBox = oContent && oContent.getItems().find(function (oControl) {
+							return oControl.isA("sap.m.FlexBox");
+						});
+						const oToggleButton = oFlexBox && oFlexBox.getItems()[0];
+						if (oToggleButton) {
+							oToggleButton.setPressed(true);
+						}
+					});
+					resolve();
+				}, this);
+
+				oList.getBinding("items").refresh();
+			}.bind(this));
 		},
 
 		onAfterModeChange: function (oEvent) {

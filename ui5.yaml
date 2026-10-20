@@ -28,3 +28,8 @@ server:
       configuration:
         component: ar.com.relesa.shipment.planning
         ui5Theme: sap_fiori_3
+builder:
+  resources:
+    excludes:
+      - /test/**
+      - /localService/**
