@@ -534,8 +534,7 @@ sap.ui.define([
 			if (!(Device.support.touch && valorDelInput == '')) {
 				oListItem.setBusy(true);
 				try {
-					await ShipmentService.updateObservedQuantity(sPath, valorDelInput);
-					const oUpdatedComponent = await ShipmentService.read(sPath);
+					const oUpdatedComponent = await this._updateObservedQuantity(sPath, valorDelInput);
 					const iSelectedIndex = this.SELECCIONADOS.findIndex(function (oSelected) {
 						return oSelected.palletId === oUpdatedComponent.palletId &&
 							oSelected.floor === oUpdatedComponent.floor &&
@@ -569,6 +568,11 @@ sap.ui.define([
 			}
 
 
+		},
+
+		_updateObservedQuantity: async function (sPath, sObservedQuantity) {
+			await ShipmentService.updateObservedQuantity(sPath, sObservedQuantity);
+			return ShipmentService.read(sPath);
 		},
 
 		_refreshComponentsPreservingSelection: function () {
@@ -1416,29 +1420,39 @@ sap.ui.define([
 
 			oViewModel.setProperty("/palletBusy", true);
 			oView.setBusy(true);
-
-			var oPalletHeader = oView.getBindingContext("ShipmentService").getObject();
-
-			// Mismo criterio de orden que onGuardar (uncheck antes que check), para
-			// mantener el comportamiento visual/de negocio observado hoy aunque acá
-			// viajen todos en UNA sola llamada y el orden no afecte al backend.
-			var aSeleccionadosOrdenados = this.SELECCIONADOS.slice().sort(function (a, b) {
-				if (a.statusId !== "checked" && b.statusId === "checked") { return -1; }
-				if (a.statusId === "checked" && b.statusId !== "checked") { return 1; }
-				return 0;
-			});
-
-			var aItems = aSeleccionadosOrdenados.map(function (oComponent) {
-				return {
-					floor: oComponent.floor,
-					materialId: oComponent.materialId,
-					checked: (oComponent.statusId === 'pending' || oComponent.statusId === '')
-				};
-			});
-
-			var oPayload = this._buildCheckUncheckDeepPayload(oPalletHeader, aItems);
+			var bAbortSave = false;
 
 			try {
+				var bPartialsProcessed = await this._processPartialSelectedComponents();
+				if (!bPartialsProcessed) {
+					bAbortSave = true;
+					return;
+				}
+
+				if (!this.SELECCIONADOS.length) {
+					return;
+				}
+
+				var oPalletHeader = oView.getBindingContext("ShipmentService").getObject();
+
+				// Mismo criterio de orden que onGuardar (uncheck antes que check), para
+				// mantener el comportamiento visual/de negocio observado hoy aunque acá
+				// viajen todos en UNA sola llamada y el orden no afecte al backend.
+				var aSeleccionadosOrdenados = this.SELECCIONADOS.slice().sort(function (a, b) {
+					if (a.statusId !== "checked" && b.statusId === "checked") { return -1; }
+					if (a.statusId === "checked" && b.statusId !== "checked") { return 1; }
+					return 0;
+				});
+
+				var aItems = aSeleccionadosOrdenados.map(function (oComponent) {
+					return {
+						floor: oComponent.floor,
+						materialId: oComponent.materialId,
+						checked: (oComponent.statusId === 'pending' || oComponent.statusId === '')
+					};
+				});
+
+				var oPayload = this._buildCheckUncheckDeepPayload(oPalletHeader, aItems);
 				var oResponseData = await this._createCheckUncheckDeepEntity(oPayload);
 				var oResult = this._processCheckUncheckDeepEntityResponse(oResponseData);
 
@@ -1451,11 +1465,102 @@ sap.ui.define([
 			} catch (oError) {
 				this.getMessageDialog().addResponse(oError);
 			} finally {
-				this.SELECCIONADOS = [];
-				this.SeleccionadosAux = [];
+				if (!bAbortSave) {
+					this.SELECCIONADOS = [];
+					this.SeleccionadosAux = [];
+				}
 				oView.setBusy(false);
 				oViewModel.setProperty("/palletBusy", false);
 			}
+		},
+
+		_processPartialSelectedComponents: async function () {
+			var oList = this.byId("list.components");
+			var aSelectedComponents = this.SELECCIONADOS.slice();
+			var bSelectionChanged = false;
+
+			for (var i = 0; i < aSelectedComponents.length; i++) {
+				var oSelected = aSelectedComponents[i];
+				var oListItem = oList.getItems().find(function (oItem) {
+					var oContext = oItem.getBindingContext("ShipmentService");
+					var oComponent = oContext && oContext.getObject();
+					return oComponent &&
+						oComponent.shipmentId === oSelected.shipmentId &&
+						oComponent.plantId === oSelected.plantId &&
+						oComponent.palletId === oSelected.palletId &&
+						oComponent.floor === oSelected.floor &&
+						oComponent.materialId === oSelected.materialId;
+				});
+				var oContext = oListItem && oListItem.getBindingContext("ShipmentService");
+				var oComponent = oContext && oContext.getObject();
+				var oRootContent = oListItem && oListItem.getContent()[0];
+				var oFlexBox = oRootContent && oRootContent.getItems().find(function (oControl) {
+					return oControl.isA("sap.m.FlexBox");
+				});
+				var oQuantityInput = oFlexBox && oFlexBox.getItems().find(function (oControl) {
+					return oControl.isA("sap.m.Input");
+				});
+
+				if (!oComponent || !oContext || !oQuantityInput) {
+					sap.m.MessageBox.error("No se pudo validar la cantidad de todos los componentes seleccionados. No se guardó el pallet.");
+					return false;
+				}
+
+				var sObservedQuantity = oQuantityInput.getValue();
+				if (sObservedQuantity === "") {
+					sObservedQuantity = "0";
+				}
+				var nObservedQuantity = Number(sObservedQuantity);
+				var nTotalQuantity = Number(oComponent.quantity);
+
+				if (!Number.isFinite(nObservedQuantity) || !Number.isFinite(nTotalQuantity)) {
+					sap.m.MessageBox.error("La cantidad observada o la cantidad total no es válida para el SKU " + oComponent.materialId + ". No se guardó el pallet.");
+					return false;
+				}
+
+				if (nObservedQuantity >= nTotalQuantity) {
+					continue;
+				}
+
+				var sComponentPath = oContext.getPath();
+				try {
+					var oUpdatedComponent = await this._updateObservedQuantity(sComponentPath, sObservedQuantity);
+				} catch (oError) {
+					this.getMessageDialog().addResponse(oError);
+					return false;
+				}
+
+				var iSelectedIndex = this.SELECCIONADOS.findIndex(function (oPending) {
+					return oPending.shipmentId === oUpdatedComponent.shipmentId &&
+						oPending.plantId === oUpdatedComponent.plantId &&
+						oPending.palletId === oUpdatedComponent.palletId &&
+						oPending.floor === oUpdatedComponent.floor &&
+						oPending.materialId === oUpdatedComponent.materialId;
+				});
+
+				if (oUpdatedComponent.statusId !== "missing") {
+					sap.m.MessageBox.error(
+						"El SKU " + oComponent.materialId + " tiene cantidad observada " +
+						sObservedQuantity + " de " + oComponent.quantity +
+						", pero SAP no lo confirmó como faltante. No se guardaron los demás componentes."
+					);
+					return false;
+				}
+
+				if (iSelectedIndex !== -1) {
+					this.SELECCIONADOS.splice(iSelectedIndex, 1);
+				}
+				this.SeleccionadosAux = this.SELECCIONADOS;
+				oSelected.statusId = "missing";
+				oSelected.observedQuantity = oUpdatedComponent.observedQuantity;
+				bSelectionChanged = true;
+			}
+
+			if (bSelectionChanged) {
+				await this._refreshComponentsPreservingSelection();
+			}
+
+			return true;
 		},
 
 		/**
