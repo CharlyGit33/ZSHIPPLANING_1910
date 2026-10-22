@@ -333,36 +333,38 @@ sap.ui.define([
 		onSelectionChange: async function (oEvent) {
 
 			const oComponent = oEvent.getSource().getBindingContext("ShipmentService").getObject();
-			var that = this;
 
 			//NUEVO DESARROLLO - Logica que evita Buffer de seleccionados, 
 			// ahora se compara el objeto seleccionado con los que ya estan en el array de seleccionados, 
 			// si esta se elimina y si no esta se agrega, esto hace que el array de seleccionados 
 			// siempre tenga el estado correcto sin importar la cantidad de clicks o la velocidad de los mismos
-			var estabaRepetido = false;
-			var localseleccionados = [];
+			const bPressed = oEvent.getParameter("pressed");
+			const bInitiallyPressed = this.formatter.getRelevantStatusCondition(
+				this.getModel("palletView").getProperty("/yardStatus"),
+				oComponent.statusId
+			);
+			const bHasPendingChange = bPressed !== bInitiallyPressed;
+			const iSelectedIndex = this.SELECCIONADOS.findIndex(function (oSelected) {
+				return oSelected.shipmentId === oComponent.shipmentId &&
+					oSelected.plantId === oComponent.plantId &&
+					oSelected.shipmentDate === oComponent.shipmentDate &&
+					oSelected.shipmentType === oComponent.shipmentType &&
+					oSelected.palletId === oComponent.palletId &&
+					oSelected.floor === oComponent.floor &&
+					oSelected.materialId === oComponent.materialId;
+			});
 
-			if (!oEvent.getParameter("pressed")) {
-				this.SELECCIONADOS = this.SELECCIONADOS.filter(sel => sel.floor !== oComponent.floor && sel.materialId !== oComponent.materialId);
-				that.SeleccionadosAux = this.SELECCIONADOS;
-			}
-
-			for (let index = 0; index < this.SELECCIONADOS.length; index++) {
-				if (JSON.stringify(this.SELECCIONADOS[index]) === JSON.stringify(oComponent)) {
-					//"REPETIDO"
-					estabaRepetido = true;
-				} else {
-					localseleccionados.push(this.SELECCIONADOS[index])
+			if (!bHasPendingChange) {
+				if (iSelectedIndex !== -1) {
+					this.SELECCIONADOS.splice(iSelectedIndex, 1);
 				}
-			}
-
-			//Repetidos no se agregan, se mantiene el array igual, si no esta se agrega al array de seleccionados
-			if (!estabaRepetido) {
+			} else if (iSelectedIndex === -1) {
 				this.SELECCIONADOS.push(oComponent);
 			} else {
-				this.SELECCIONADOS = localseleccionados;
+				this.SELECCIONADOS[iSelectedIndex] = oComponent;
 			}
-			that.SeleccionadosAux = this.SELECCIONADOS;
+
+			this.SeleccionadosAux = this.SELECCIONADOS;
 		},
 
 		onGuardar: async function (oEvent) {
