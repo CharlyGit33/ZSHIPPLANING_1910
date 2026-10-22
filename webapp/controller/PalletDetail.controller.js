@@ -132,19 +132,6 @@ sap.ui.define([
 			aGroups.push(new Sorter("materialId", false));
 			oBinding.sort(aGroups);
 		},
-		ordenarOnInit: function () {
-			this.agregarPCK();
-			var oGridList = this.byId("list.components");
-			var oBinding = oGridList.getBinding("items");
-			oBinding.sort([
-				new Sorter("materialFamily", false, this.mGroupFunctions["materialFamily"]),
-				new Sorter("materialId", false)
-			]);
-
-			//console.log(this.SCROLLTOP)
-
-
-		},
 		setInputFields: function () {
 			var inputs = window.document.querySelectorAll('.sapMInputBaseInner');
 			if (inputs && inputs.length > 0) {
@@ -258,8 +245,7 @@ sap.ui.define([
 
 						var that = this;
 						/////////OPCION 1
-						await this._bindComponents();
-						console.log("NOIRATRAS = FALSE dsps de ._bindoComponents")
+						console.log("NOIRATRAS = FALSE después de actualizar componentes")
 						this.NOIRATRAS = false;
 						that._showShipmentDetail();
 
@@ -622,46 +608,25 @@ sap.ui.define([
 		},
 
 		getGroupHeader: function (oGroup) {
-			const oContext = this.getView().getElementBinding('ShipmentService').getBoundContext().getObject()
-
-			var oGridList = this.byId("list.components");
-			var path = oGridList.getBinding("items").oContext.sDeepPath;
-			var localpalletId = path[(path.length - 4)] + path[(path.length - 3)]
-			let result = [];
-			var localViajeID = this.byId("list.components").getBinding("items").oContext.sDeepPath.slice(9, -1).split(',')[0].slice(12, -1);
-
-			//Obtener componentes por Grupo de Matarial - deployado
-			for (let i in this.getView().getModel("ShipmentService").oData)
-
-				result.push([i, this.getView().getModel("ShipmentService").oData[i]]);
-
-			/* LOGICA de acumulador para agrupamiento */
-			var acumulador = 0;
-			try {
-
-				for (let index = 0; index < result.length; index++) {
-
-					if (result[index][0].includes("planningShipments(") || result[index][0].includes("pallets(shipmentId(")) {
-						result.splice(index, 1);
-					}
-					var fecha = new Date(this.FECHAVIAJE);
-					if (result[index][1].palletId == localpalletId && result[index][1].materialFamily == oGroup.key && String(result[index][1].shipmentDate) == fecha && result[index][1].shipmentId == localViajeID) {
-						acumulador = parseInt(acumulador) + parseInt(result[index][1].quantity);
-					}
-
+			const oPalletContext = this.getView().getBindingContext("ShipmentService");
+			const oPallet = oPalletContext.getObject();
+			const oModel = this.getView().getModel("ShipmentService");
+			const aComponentPaths = oPalletContext.getObject("components") || [];
+			const iCounter = aComponentPaths.reduce(function (iTotal, sComponentPath) {
+				const oComponent = oModel.getObject("/" + sComponentPath);
+				if (oComponent && oComponent.materialFamily === oGroup.key) {
+					return iTotal + (Number(oComponent.quantity) || 0);
 				}
-
-			} catch (error) {
-				console.log("error en lógica de counter")
-			}
+				return iTotal;
+			}, 0);
 
 			//Atributos del elemento de cabecera de grupo
 			return new sap.m.GroupHeaderListItem({
 				title: oGroup.key,
-				type: (oContext.palletStatus === 'pending' || oContext.palletStatus === 'checked' || oContext.palletStatus === 'inCheck' || oContext.palletStatus === 'missing') && oContext.palletType === 'M' ?
+				type: (oPallet.palletStatus === 'pending' || oPallet.palletStatus === 'checked' || oPallet.palletStatus === 'inCheck' || oPallet.palletStatus === 'missing') && oPallet.palletType === 'M' ?
 					sap.m.ListType.Navigation :
 					sap.m.ListType.Inactive,
-				counter: parseInt(acumulador),
+				counter: iCounter,
 				tooltip: "Selecciona o Deselecciona todos los componentes de la familia " + oGroup.key,
 				press: this.onGroupPress.bind(this)
 			}).addStyleClass("my-group-header-class");
@@ -702,16 +667,6 @@ sap.ui.define([
 			this.SeleccionadosAux = this.SELECCIONADOS;
 		},
 
-		getMaterialFamilyGroup: function (oContext) {
-			if (oContext.getProperty("materialFamilyDescription")) {
-				return oContext.getProperty("materialFamilyDescription");
-			} else {
-				if (oContext.getProperty(oContext.getPath()) !== null && oContext.getProperty(oContext.getPath()) !== undefined) {
-					return oContext.getProperty(oContext.getPath()).materialFamily;
-				} else { return ""; }
-			}
-		},
-
 		/* =========================================================== */
 		/* begin: internal methods                                     */
 		/* =========================================================== */
@@ -747,25 +702,16 @@ sap.ui.define([
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
 			await this._getLocation()
 
-			this.getOwnerComponent().getModel("ShipmentService").metadataLoaded().then(function () {
-				var sObjectPath = this.getOwnerComponent().getModel("ShipmentService").createKey("pallets", {
-					shipmentId: parameter.shipmentId,
-					plantId: parameter.plantId,
-					shipmentDate: parameter.shipmentDate,
-					shipmentType: parameter.shipmentType,
-					palletId: parameter.palletId
-				});
-				this._bindView("/" + sObjectPath);
-
-				try {
-					this.ordenarOnInit();
-
-				} catch (error) {
-
-					console.log("error al intentar ordenar")
-					//this.onNavToShipment()
-				}
-			}.bind(this));
+			const oModel = this.getOwnerComponent().getModel("ShipmentService");
+			await oModel.metadataLoaded();
+			const sObjectPath = oModel.createKey("pallets", {
+				shipmentId: parameter.shipmentId,
+				plantId: parameter.plantId,
+				shipmentDate: parameter.shipmentDate,
+				shipmentType: parameter.shipmentType,
+				palletId: parameter.palletId
+			});
+			this._bindView("/" + sObjectPath);
 
 			try {
 				this.agregarPCK();
@@ -855,20 +801,6 @@ sap.ui.define([
 			oViewModel.setProperty("/delay", iOriginalViewBusyDelay);
 		},
 
-		_bindComponents: async function () {
-			const oGrid = this.byId("list.components"),
-				oTemplate = oGrid.getBindingInfo("items").template;
-			oGrid.bindItems({
-				path: "components",
-				model: "ShipmentService",
-				template: oTemplate,
-				sorter: [
-					new Sorter("materialFamily", false, this.getMaterialFamilyGroup.bind(this)),
-					new Sorter("materialId", false),
-				],
-				groupHeaderFactory: this.getGroupHeader.bind(this)
-			});
-		},
 		agregarPCK: function () {
 			setTimeout(function () {
 
@@ -1508,7 +1440,6 @@ sap.ui.define([
 				var oResponseData = await this._createCheckUncheckDeepEntity(oPayload);
 				var oResult = this._processCheckUncheckDeepEntityResponse(oResponseData);
 
-				await this._bindComponents();
 				this.byId("list.components").getBinding("items").refresh();
 
 				if (!oResult.hasError) {
