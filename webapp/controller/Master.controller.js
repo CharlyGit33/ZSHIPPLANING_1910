@@ -294,7 +294,7 @@ sap.ui.define([
 
 			const oParams = {
 				urlParameters: {
-					Date: this.formatter.formatDatePure(oFilter.shipmentDate)
+					Date: this.formatter.formatLocalDatePure(oFilter.shipmentDate)
 				}
 			}
 			const oFaltante = this.getOdataModel().callFunction('/getFaltante', oParams)
@@ -353,16 +353,12 @@ sap.ui.define([
 		 */
 		_showDetail: function (oItem) {
 			const oShipment = oItem.getBindingContext("shipments").getObject();
-			this._navToDetail(oShipment.shipmentId, oShipment.salesOrganizationId, oShipment.shipmentDate);
-
-			/* Se comenta para que no se muestre el modal de pallets faltantes, ya que se decidió que siempre se navegue al detalle del viaje, aunque haya pallets faltantes.
 			const bMissing = this.getModel('masterView').getProperty('/missing');
 			if (!bMissing) {
 				this._navToDetail(oShipment.shipmentId, oShipment.salesOrganizationId, oShipment.shipmentDate);
 			} else {
 				this._MostrarPalletsFaltantes(oShipment.shipmentId, oShipment.plantId, oShipment.shipmentDate, oShipment.salesOrganizationId);
 			}
-			*/
 		},
 
 		_navToDetail: function (sId, sOrg, sDate) {

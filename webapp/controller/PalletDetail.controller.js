@@ -94,15 +94,7 @@ sap.ui.define([
 		},
 
 		onNavToShipment: function () {
-			//console.log("onNavToShipment")
-			var oHistory = History.getInstance();
-			var sPreviousHash = oHistory.getPreviousHash();
-
-			if (sPreviousHash !== undefined) {
-				window.history.go(-1);
-			} else {
-				this._showShipmentDetail();
-			}
+			this._showShipmentDetail();
 		},
 
 		onGroupOpenPress: function () {

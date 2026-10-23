@@ -13,6 +13,10 @@ sap.ui.define([], function () {
 			const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyyMMdd", UTC: true })
 			return oDateFormat.format(oShipmentDate);
 		},
+		formatLocalDatePure: function (oShipmentDate) {
+			const oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({ pattern: "yyyyMMdd" })
+			return oDateFormat.format(oShipmentDate);
+		},
 
 
 		isItemEnabled: function (palletStatus, itemstatus) {
